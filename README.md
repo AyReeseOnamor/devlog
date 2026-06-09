@@ -48,6 +48,8 @@ $ python devlog.py list
 | `python devlog.py list`              | Show all entries             |
 | `python devlog.py search "keyword"`  | Search entries by keyword    |
 | `python devlog.py delete <id>`       | Delete an entry by id        |
+| `python devlog.py export`            | Export all entries to markdown   |
+| `python devlog.py stats`             | Show tag and activity stats      |
 
 ---
 
