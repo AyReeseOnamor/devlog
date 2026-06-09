@@ -64,6 +64,53 @@ def cmd_delete(args):
     save(entries)
     print(Fore.GREEN + f"Deleted #{args.id}: {match[0]['message']}")
 
+def cmd_export(args):
+    entries = load()
+    if not entries:
+        print(Fore.YELLOW + "No entries to export.")
+        return
+    filename = "devlog_export.md"
+    with open(filename, "w") as f:
+        f.write("# My Dev Log\n\n")
+        for entry in entries:
+            tag = f" `{entry['tag']}`" if entry['tag'] else ""
+            f.write(f"### #{entry['id']} - {entry['date']}{tag}\n\n")
+            f.write(f"{entry['message']}\n\n")
+            f.write("---\n\n")
+
+    print(Fore.GREEN + f"✓ Exported {len(entries)} entries to {filename}")
+
+def cmd_stats(args):
+    entries = load()
+    if not entries:
+        print(Fore.YELLOW + "No entries yet.")
+        return
+    total = len(entries)
+    tags = {}
+    for entry in entries:
+        if entry["tag"]:
+            tags[entry["tag"]] = tags.get(entry["tag"], 0) + 1
+
+    print(Fore.CYAN + "\n── devlog stats ──────────────────")
+    print(Fore.WHITE + f"  Total entries:  {total}")
+
+    if tags:
+        print(Fore.CYAN + "\n Tags:")
+        for tag, count in sorted(tags.items(), key = lambda x: x[1], reverse = True):
+            bar = "█" * count
+            print (Fore.YELLOW + f" {tag:<15}" + Fore.GREEN + f" {bar} {count}")
+
+    from collections import Counter
+    dates = [e["date"][:10] for e in entries]
+    date_counts = Counter(dates)
+    print(Fore.CYAN + "\n  Entries per day:")
+    for date, count in sorted(date_counts.items()):
+        bar = "█" * count
+        print(Fore.WHITE + f"    {date}  " + Fore.GREEN + f"{bar} {count}")
+
+    print(Fore.CYAN + "\n──────────────────────────────────\n")
+
+
 parser = argparse.ArgumentParser(prog = "devlog", description= "A devlog journal for your terminal")
 subparsers = parser.add_subparsers(dest= "command")
 
@@ -82,6 +129,12 @@ search_parser.set_defaults(func = cmd_search)
 delete_parser = subparsers.add_parser("delete", help = "Delete an entry in id")
 delete_parser.add_argument("id", type = int, help = "ID of the entry to delete")
 delete_parser.set_defaults(func = cmd_delete)
+
+export_parser = subparsers.add_parser("export", help="Export all entries to a markdown file")
+export_parser.set_defaults(func=cmd_export)
+
+stats_parser = subparsers.add_parser("stats", help="Show entry statistics")
+stats_parser.set_defaults(func=cmd_stats)
 
 args = parser.parse_args()
 
